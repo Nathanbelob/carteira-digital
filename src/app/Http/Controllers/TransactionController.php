@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Validator;
 use App\BO\UserBO;
+use Illuminate\Http\Request;
+
 
 class TransactionController extends Controller
 {
@@ -97,6 +99,12 @@ class TransactionController extends Controller
 
     public function executaTransacao(Request $request)
     {
+        $validator = Validator::make($request->all(), $this->_rules());
+
+        if ($validator->fails()) {
+            return response()->json($validator->messages(), 400);
+        }
+
         $userBO = new UserBO();
         $this->retorno = $userBO->executeTransaction($request);
         if(!$this->retorno){
@@ -104,5 +112,14 @@ class TransactionController extends Controller
         }
 
         return response()->json($this->retorno, $this->codigo);  
+    }
+
+    private function _rules()
+    {
+        return [
+            'value' => 'required|numeric',
+            'payer' => 'required|numeric',
+            'payee' => 'required|numeric'
+        ];
     }
 }
